@@ -32,6 +32,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final RoundedLoadingButtonController _btnController2 =
       RoundedLoadingButtonController();
+  
+  final RoundedLoadingButtonController _btnController3 =
+      RoundedLoadingButtonController();
 
   void _doSomething(RoundedLoadingButtonController controller) async {
     Timer(Duration(seconds: 10), () {
@@ -80,6 +83,26 @@ Tap me i have a huge text''', style: TextStyle(color: Colors.white)),
               SizedBox(
                 height: 50,
               ),
+              RoundedLoadingButton(
+                color: Colors.amber,
+                successColor: Colors.amber,
+                controller: _btnController3,
+                onPressed: () => _doSomething(_btnController3),
+                valueColor: Colors.black,
+                borderRadius: 10,
+                borderColor: Colors.blue.shade700,
+                borderWidth: 2,
+                shadowColor: Colors.blue.withOpacity(0.5),
+                shadowBlurRadius: 8,
+                gradient: LinearGradient(
+                    colors: [Colors.blue.shade400, Colors.blue.shade700],
+                ),
+                child: Text('''
+Tap me i have customized style''', style: TextStyle(color: Colors.white)),
+              ),
+              SizedBox(
+                height: 50,
+              ),
               OutlinedButton(
                   style: ButtonStyle(
                     shape: MaterialStateProperty.all(RoundedRectangleBorder(
@@ -88,6 +111,7 @@ Tap me i have a huge text''', style: TextStyle(color: Colors.white)),
                   onPressed: () {
                     _btnController1.reset();
                     _btnController2.reset();
+                    _btnController3.reset();
                   },
                   child: Text('Reset')),
               SizedBox(
@@ -101,6 +125,7 @@ Tap me i have a huge text''', style: TextStyle(color: Colors.white)),
                 onPressed: () {
                   _btnController1.error();
                   _btnController2.error();
+                  _btnController3.error();
                 },
                 child: Text('Error'),
               ),
@@ -115,6 +140,7 @@ Tap me i have a huge text''', style: TextStyle(color: Colors.white)),
                 onPressed: () {
                   _btnController1.success();
                   _btnController2.success();
+                  _btnController3.success();
                   // _btnController1
                   print(_btnController1.currentState);
                 },
