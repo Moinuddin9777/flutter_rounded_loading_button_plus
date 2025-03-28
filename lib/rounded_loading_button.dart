@@ -82,6 +82,42 @@ class RoundedLoadingButton extends StatefulWidget {
   /// The duration of the success and failed animation
   final Duration completionDuration;
 
+  /// The border color of the button
+  final Color? borderColor;
+
+  /// The width of the button border
+  final double borderWidth;
+
+  /// The style of the button border
+  final BorderStyle borderStyle;
+
+  /// The color of the button shadow
+  final Color? shadowColor;
+
+  /// The offset of the button shadow
+  final Offset shadowOffset;
+
+  /// The blur radius of the button shadow
+  final double shadowBlurRadius;
+
+  /// The spread radius of the button shadow
+  final double shadowSpreadRadius;
+
+  /// The gradient background of the button
+  final Gradient? gradient;
+
+  /// The padding around the button content
+  final EdgeInsetsGeometry contentPadding;
+
+  /// The text style for the button's child (if it's a Text widget)
+  final TextStyle? textStyle;
+
+  /// Whether to show a hover effect
+  final bool enableHover;
+
+  /// The color of the button when hovered
+  final Color? hoverColor;
+
   Duration get _borderDuration {
     return Duration(milliseconds: (duration.inMilliseconds / 2).round());
   }
@@ -112,6 +148,19 @@ class RoundedLoadingButton extends StatefulWidget {
     this.completionCurve = Curves.elasticOut,
     this.completionDuration = const Duration(milliseconds: 1000),
     this.disabledColor,
+    // New parameters
+    this.borderColor,
+    this.borderWidth = 0,
+    this.borderStyle = BorderStyle.solid,
+    this.shadowColor,
+    this.shadowOffset = const Offset(0, 2),
+    this.shadowBlurRadius = 4,
+    this.shadowSpreadRadius = 0,
+    this.gradient,
+    this.contentPadding = const EdgeInsets.symmetric(horizontal: 16),
+    this.textStyle,
+    this.enableHover = true,
+    this.hoverColor,
   }) : super(key: key);
 
   @override
@@ -188,23 +237,69 @@ class RoundedLoadingButtonState extends State<RoundedLoadingButton>
       },
     );
 
-    final _btn = ButtonTheme(
-      shape: RoundedRectangleBorder(borderRadius: _borderAnimation.value),
-      disabledColor: widget.disabledColor,
-      padding: const EdgeInsets.all(0),
+    final ButtonStyle buttonStyle = ElevatedButton.styleFrom(
+      surfaceTintColor: widget.disabledColor,
+      minimumSize: Size(_squeezeAnimation.value, widget.height),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(widget.borderRadius),
+        side: widget.borderWidth > 0 
+            ? BorderSide(
+                color: widget.borderColor ?? theme.primaryColor,
+                width: widget.borderWidth,
+                style: widget.borderStyle,
+              )
+            : BorderSide.none,
+      ),
+      backgroundColor: widget.gradient == null ? widget.color : null,
+      elevation: widget.elevation,
+      shadowColor: widget.shadowColor,
+      padding: widget.contentPadding,
+    ).copyWith(
+      overlayColor: widget.enableHover 
+          ? WidgetStateProperty.resolveWith<Color?>((states) {
+              if (states.contains(WidgetState.hovered)) {
+                return widget.hoverColor ?? widget.color?.withOpacity(0.8);
+              }
+              return null;
+            })
+          : null,
+    );
+
+    Widget buttonChild = widget.gradient != null
+        ? DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: widget.gradient,
+              borderRadius: BorderRadius.circular(widget.borderRadius),
+            ),
+            child: childStream,
+          )
+        : childStream;
+
+    if (widget.textStyle != null && widget.child is Text) {
+      buttonChild = DefaultTextStyle(
+        style: widget.textStyle!,
+        child: buttonChild,
+      );
+    }
+
+    final btn = Container(
+      decoration: widget.elevation > 0 
+          ? BoxDecoration(
+              borderRadius: BorderRadius.circular(widget.borderRadius),
+              boxShadow: [
+                BoxShadow(
+                  color: widget.shadowColor ?? Colors.black.withOpacity(0.2),
+                  offset: widget.shadowOffset,
+                  blurRadius: widget.shadowBlurRadius,
+                  spreadRadius: widget.shadowSpreadRadius,
+                ),
+              ],
+            )
+          : null,
       child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          surfaceTintColor: widget.disabledColor,
-          minimumSize: Size(_squeezeAnimation.value, widget.height),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(widget.borderRadius),
-          ),
-          backgroundColor: widget.color,
-          elevation: widget.elevation,
-          padding: const EdgeInsets.all(0),
-        ),
+        style: buttonStyle,
         onPressed: widget.onPressed == null ? null : _btnPressed,
-        child: childStream,
+        child: buttonChild,
       ),
     );
 
@@ -215,7 +310,7 @@ class RoundedLoadingButtonState extends State<RoundedLoadingButton>
             ? _cross
             : _state.value == ButtonState.success
                 ? _check
-                : _btn,
+                : btn,
       ),
     );
   }
